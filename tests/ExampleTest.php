@@ -31,7 +31,7 @@ class ExampleTest extends TestCase
              ->assertResponseOk();
 
         array_map(function ($product) {
-            $this->seeJson($product->jsonSerialize());
+            $this->seeJson(['id' => (string) $product->id]);
         }, $products->all());
     }
 
