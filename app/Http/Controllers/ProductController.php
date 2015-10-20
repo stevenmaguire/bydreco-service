@@ -1,9 +1,8 @@
 <?php namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Contracts\Productable;
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -24,10 +23,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        return $this->product->getList([
-            'keyword' => $request->input('keyword'),
-            'take' => 15,
-        ]);
+        return $this->product->getList($request->input());
     }
 
     /**
@@ -38,9 +34,7 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'name' => 'required|unique:products|productQuality',
-        ]);
+        $this->validate($request, $this->product->getValidationRules());
 
         return $this->product->addProduct($request->input());
     }
@@ -54,9 +48,7 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'name' => 'required|unique:products|productQuality',
-        ]);
+        $this->validate($request, $this->product->getValidationRules());
 
         return $this->product->updateProduct($id, $request->input());
     }

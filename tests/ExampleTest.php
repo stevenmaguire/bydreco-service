@@ -1,7 +1,8 @@
 <?php
 
-use App\Product;
 use App\Description;
+use App\Events;
+use App\Product;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -9,8 +10,6 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 class ExampleTest extends TestCase
 {
     use DatabaseTransactions;
-
-    protected $jsonHeaders = ['Content-Type' => 'application/json'];
 
     /**
      * A basic functional test example.
@@ -52,8 +51,13 @@ class ExampleTest extends TestCase
     {
         $product = factory(Product::class)->make(['name' => 'meats']);
 
-        $result = $this->json('post', route('api.products.store'), $product->jsonSerialize())
+        $this->json('post', route('api.products.store'), $product->jsonSerialize())
+            //->expectsEvents(Events\ProductWasCreated::class)
             ->seeInDatabase('products', ['name' => $product->name])
+            ->assertResponseOk();
+
+        $this->json('get', route('api.products.index'))
+            ->seeJson(['name' => $product->name])
             ->assertResponseOk();
     }
 
@@ -118,6 +122,7 @@ class ExampleTest extends TestCase
         $description = factory(Description::class)->make();
 
         $this->json('post', route('api.products.descriptions.store', ['products' => $product->id]), $description->jsonSerialize())
+             //->expectsEvents(Events\DescriptionWasCreated::class)
              ->seeInDatabase('descriptions', ['product_id' => $product->id, 'body' => $description->body])
              ->assertResponseOk();
     }

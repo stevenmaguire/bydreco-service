@@ -1,13 +1,9 @@
-<?php
+<?php namespace App\Http\Controllers;
 
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
+use App\Contracts\Descriptionable;
 use App\Contracts\Productable;
-use App\Product;
-use App\Description;
-use App\Http\Requests;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class ProductDescriptionController extends Controller
 {
@@ -16,8 +12,9 @@ class ProductDescriptionController extends Controller
      *
      * @param Productable  $product
      */
-    public function __construct(Productable $product)
+    public function __construct(Descriptionable $description, Productable $product)
     {
+        $this->description = $description;
         $this->product = $product;
     }
 
@@ -30,10 +27,7 @@ class ProductDescriptionController extends Controller
      */
     public function index($productId, Request $request)
     {
-        return $this->product->getProductDescriptions($productId, [
-            'keyword' => $request->input('keyword'),
-            'take' => 15
-        ]);
+        return $this->product->getProductDescriptions($productId, $request->input());
     }
 
     /**
@@ -45,9 +39,7 @@ class ProductDescriptionController extends Controller
      */
     public function store($productId, Request $request)
     {
-        $this->validate($request, [
-            'body' => ['required'],
-        ]);
+        $this->validate($request, $this->description->getValidationRules());
 
         return $this->product->addProductDescription($productId, $request->input());
     }

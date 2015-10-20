@@ -28,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(Contracts\Productable::class, Services\ProductService::class);
+        $this->app->bind(Contracts\Descriptionable::class, Services\DescriptionService::class);
     }
 }
