@@ -5,6 +5,7 @@ use App\Events;
 use App\Product;
 use App\Contracts\Productable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Validator;
 use Stevenmaguire\Laravel\Services\EloquentCache;
 
 class ProductService extends EloquentCache implements Productable
@@ -44,17 +45,23 @@ class ProductService extends EloquentCache implements Productable
      *
      * @param array  $options
      *
-     * @return Product
+     * @return Product|Illuminate\Contracts\Validation\Validator
      */
     public function addProduct($options = [])
     {
-        $product = $this->product->create([
-            'name' => $options['name']
-        ]);
+        $v = Validator::make($options, $this->getValidationRules());
 
-        event(new Events\ProductWasCreated($product));
+        if ($v->passes()) {
+            $product = $this->product->create([
+                'name' => $options['name']
+            ]);
 
-        return $product;
+            event(new Events\ProductWasCreated($product));
+
+            return $product;
+        }
+
+        return $v;
     }
 
     /**
@@ -75,7 +82,31 @@ class ProductService extends EloquentCache implements Productable
 
         event(new Events\DescriptionWasCreated($description));
 
-        return $description;
+        return $description->fresh();
+    }
+
+    public function findOrCreate($name)
+    {
+        // Attempt to find in cache
+        $products = $this->getAll();
+
+        $filtered = $products->filter(function ($item) use ($name) {
+            return $item->name == $name;
+        });
+
+        if (!$filtered->isEmpty()) {
+            return $filtered->first();
+        }
+
+        // Attempt to find in database
+        $product = $this->product->withName($name)->first();
+
+        if ($product) {
+            return $product;
+        }
+
+        // Attempt to create
+        return $this->addProduct(['name' => $name]);
     }
 
     /**
@@ -103,6 +134,18 @@ class ProductService extends EloquentCache implements Productable
     }
 
     /**
+     * Retrives list of all products.
+     *
+     * @return Collection
+     */
+    protected function getAll()
+    {
+        $query = $this->product->query();
+
+        return $this->cache('all', $query, 'get');
+    }
+
+    /**
      * Retrives paginated list of products.
      *
      * @param array  $options
@@ -111,8 +154,14 @@ class ProductService extends EloquentCache implements Productable
      */
     public function getList($options = [])
     {
+        $sort = isset($options['sort']) ? $options['sort'] : null;
         $keyword = isset($options['keyword']) ? $options['keyword'] : null;
         $take = isset($options['take']) ? $options['take'] : null;
+
+        if ($sort == 'random') {
+            return $this->getRandom($take ?: 1);
+        }
+
         $query = $this->product->withKeyword($keyword);
 
         return $this->cache(
@@ -145,6 +194,20 @@ class ProductService extends EloquentCache implements Productable
         }
 
         throw new ModelNotFoundException;
+    }
+
+    /**
+     * Retrieves a random product from cached collection.
+     *
+     * @param  integer  $count
+     *
+     * @return Collection|Product
+     */
+    public function getRandom($count = 1)
+    {
+        $products = $this->getAll();
+
+        return $products->random($count);
     }
 
     /**

@@ -17,6 +17,22 @@ class ProductController extends Controller
     }
 
     /**
+     * Attempts to find or create new product.
+     *
+     * @return Response
+     */
+    public function findOrCreate(Request $request)
+    {
+        $result = $this->product->findOrCreate($request->input('name'));
+
+        if (is_a($result, 'Illuminate\Contracts\Validation\Validator')) {
+            $this->throwValidationException($request, $result);
+        }
+
+        return $result;
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return Response
@@ -24,6 +40,16 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         return $this->product->getList($request->input());
+    }
+
+    /**
+     * Show the specified resource.
+     *
+     * @return Response
+     */
+    public function show($productId, Request $request)
+    {
+        return $this->product->getProduct($productId);
     }
 
     /**

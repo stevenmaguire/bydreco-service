@@ -15,7 +15,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::group(['prefix' => 'api'], function () {
-    Route::resource('products', 'ProductController', ['only' => ['index', 'store', 'update']]);
+Route::group(['prefix' => 'api', 'middleware' => 'cors'], function () {
+    Route::get('products/findOrCreate', 'ProductController@findOrCreate');
+    Route::resource('products', 'ProductController', ['only' => ['index', 'show', 'store', 'update']]);
     Route::resource('products.descriptions', 'ProductDescriptionController', ['only' => ['index', 'store']]);
+    Route::group(['prefix' => 'descriptions/{descriptionId}'], function () {
+        Route::post('vote-down', 'DescriptionController@voteDown');
+        Route::post('vote-up', 'DescriptionController@voteUp');
+    });
 });

@@ -26,6 +26,14 @@ class ManageCache
     }
 
     /**
+     * Handle description updated events.
+     */
+    public function onDescriptionWasUpdated($event)
+    {
+        $this->product->flushProductDescriptionCache($event->description->product);
+    }
+
+    /**
      * Handle product created events.
      */
     public function onProductWasCreated($event)
@@ -45,6 +53,11 @@ class ManageCache
         $events->listen(
             Events\DescriptionWasCreated::class,
             get_class().'@onDescriptionWasCreated'
+        );
+
+        $events->listen(
+            Events\DescriptionWasUpdated::class,
+            get_class().'@onDescriptionWasUpdated'
         );
 
         $events->listen(

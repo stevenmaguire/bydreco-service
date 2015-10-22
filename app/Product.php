@@ -5,6 +5,13 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = ['approved_at', 'featured_since'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
@@ -17,6 +24,14 @@ class Product extends Model
     public function descriptions()
     {
         return $this->hasMany(Description::class);
+    }
+
+    /**
+     * Get the product records by name.
+     */
+    public function scopeWithName($query, $name)
+    {
+        return $query->where('name', $name);
     }
 
     /**

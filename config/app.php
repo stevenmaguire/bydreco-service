@@ -144,6 +144,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\QueryLogServiceProvider::class,
+        Barryvdh\Cors\ServiceProvider::class,
 
     ],
 
