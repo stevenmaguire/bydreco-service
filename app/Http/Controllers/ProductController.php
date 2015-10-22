@@ -1,14 +1,21 @@
-<?php
+<?php namespace App\Http\Controllers;
 
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use App\Product;
-use App\Http\Requests;
+use App\Contracts\Productable;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    /**
+     * Creates new controller instance.
+     *
+     * @param Productable  $product
+     */
+    public function __construct(Productable $product)
+    {
+        $this->product = $product;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,8 +23,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        return Product::withKeyword($request->input('keyword'))
-            ->paginate(15);
+        return $this->product->getList($request->input());
     }
 
     /**
@@ -28,13 +34,9 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
-            'name' => 'required|unique:products|productQuality',
-        ]);
+        $this->validate($request, $this->product->getValidationRules());
 
-        return Product::create([
-            'name' => $request->input('name')
-        ]);
+        return $this->product->addProduct($request->input());
     }
 
     /**
@@ -46,15 +48,8 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'name' => 'required|unique:products|productQuality',
-        ]);
+        $this->validate($request, $this->product->getValidationRules());
 
-        $product = Product::findOrFail($id);
-        $product->update([
-            'name' => $request->input('name')
-        ]);
-
-        return $product;
+        return $this->product->updateProduct($id, $request->input());
     }
 }

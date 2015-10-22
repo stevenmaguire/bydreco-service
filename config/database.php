@@ -4,6 +4,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Enable database query logging
+    |--------------------------------------------------------------------------
+    |
+    | This functionality is not included by default and this setting is a
+    | convenience for any future implementation.
+    |
+    */
+
+    'log' => env('DB_LOG', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | PDO Fetch Style
     |--------------------------------------------------------------------------
     |
@@ -49,12 +61,6 @@ return [
         'sqlite' => [
             'driver'   => 'sqlite',
             'database' => storage_path('database.sqlite'),
-            'prefix'   => '',
-        ],
-
-        'testing' => [
-            'driver'   => 'sqlite',
-            'database' => storage_path('testing.sqlite'),
             'prefix'   => '',
         ],
 
