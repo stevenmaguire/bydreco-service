@@ -99,7 +99,7 @@ class ProductService extends EloquentCache implements Productable
         }
 
         // Attempt to find in database
-        $product = $this->product->withName($name)->first();
+        $product = $this->product->withIdOrName($name)->first();
 
         if ($product) {
             return $product;
@@ -181,12 +181,12 @@ class ProductService extends EloquentCache implements Productable
      */
     public function getProduct($productId)
     {
-        $query = $this->product->query();
+        $query = $this->product->withIdOrName($productId);
 
         $product = $this->cache(
             sprintf('find(%s)', $productId),
             $query,
-            sprintf('find:%s', $productId)
+            'first'
         );
 
         if ($product) {

@@ -27,11 +27,11 @@ class Product extends Model
     }
 
     /**
-     * Get the product records by name.
+     * Get the product records by id or name.
      */
-    public function scopeWithName($query, $name)
+    public function scopeWithIdOrName($query, $idOrName)
     {
-        return $query->where('name', $name);
+        return $query->where('id', $idOrName)->orWhere('name', $idOrName);
     }
 
     /**
